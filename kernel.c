@@ -24,6 +24,7 @@ void main(){
         "OO   OO  SSSSS\n"
         "OO   OO      SS\n"
         " OOOOO   SSSSS\n";
+        
     clear_screen();
     print_string(message, GREEN_ON_BLACK);
 

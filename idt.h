@@ -7,8 +7,16 @@
 #define GREEN_ON_BLACK 0x0A
 #define RED_ON_BLACK   0x0C
 
+//kernel_entry.asm
 extern void idt_load(uint32_t idt_ptr_adress);
+
+//interrupt.asm
 extern void isr0(void);
+extern void isr1(void);
+
+//io.asm
+extern void outb(uint16_t port, uint8_t data);
+extern uint8_t inb(uint16_t port);
 
 struct idt_entry_struct
 {

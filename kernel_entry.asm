@@ -4,6 +4,7 @@ global idt_load
 extern main
 
 start:
+    sti
     call main
     hlt 
     jmp $

@@ -14,7 +14,7 @@ CFLAGS = -m32 -ffreestanding -fno-pic -fno-pie -fno-stack-protector -Wall -Wextr
 BUILD_DIR = build
 
 # Liste de tous les fichiers objets nécessaires pour le noyau (dans le dossier build)
-OBJ = $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/screen.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/interrupt.o
+OBJ = $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/screen.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/io.o
 
 # Règle par défaut : génère l'image finale du système (.img) dans build/
 all: $(BUILD_DIR)/os_image.img
@@ -44,6 +44,10 @@ $(BUILD_DIR)/kernel_entry.o: kernel_entry.asm
 $(BUILD_DIR)/interrupt.o: interrupt.asm
 	@mkdir -p $(BUILD_DIR)
 	$(ASM) -f elf32 interrupt.asm -o $(BUILD_DIR)/interrupt.o
+	
+$(BUILD_DIR)/io.o: io.asm
+	@mkdir -p $(BUILD_DIR)
+	$(ASM) -f elf32 io.asm -o $(BUILD_DIR)/io.o
 
 # Compilation des fichiers sources C
 $(BUILD_DIR)/kernel.o: kernel.c idt.h screen.h
