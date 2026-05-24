@@ -68,3 +68,20 @@ void print_string(char* string, uint8_t color){
         index_string ++;
     }
 }
+
+void clear_char(){
+    if (cursor_x == 0 && cursor_y == 0) {
+        return;
+    }
+
+    if (cursor_x == 0) {
+        cursor_y--;
+        cursor_x = MAX_COLS - 1;
+    } else {
+        cursor_x--;
+    }
+
+    int position = (cursor_y * MAX_COLS + cursor_x) * 2;
+    video_memory[position] = ' ';
+    video_memory[position + 1] = WHITE_ON_BLACK;
+}

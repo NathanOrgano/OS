@@ -40,4 +40,10 @@ typedef struct idt_ptr_struct idt_ptr_t;
 void init_idt();
 void set_idt_gate(uint8_t n, uint32_t handler_adress);
 
+extern volatile int line_ready;
+extern char key_buffer[256];
+extern char lettre;
+extern int writing_perm;
+void reset_buffer();
+
 #endif

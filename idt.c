@@ -116,17 +116,46 @@ void isr_division_by_zero(){
     while(1);
 }
 
+char key_buffer[256];
+int buffer_idx = 0;
+volatile int line_ready = 0;
+int writing_perm = 0;
+
 void isr_keyboard_handler(){
     uint8_t scancode = inb(0x60);
 
     if(!(scancode & 0x80)){
 
         char lettre = kbd_azerty[scancode];
-
-        if(lettre != 0){
-            print_char(lettre, WHITE_ON_BLACK);
+        
+        if(lettre == '\n'){
+            key_buffer[buffer_idx] = "\0";
+            line_ready = 1;
         }
+
+        else if(lettre == '\b' && buffer_idx > 0){
+            buffer_idx--;
+            key_buffer[buffer_idx] = 0x00;
+            clear_char();
+        }
+
+        else if (lettre >=32 && buffer_idx < 255)
+        {
+            if (writing_perm != 0){
+                key_buffer[buffer_idx++] = lettre;
+
+                char str[2] = {lettre, '\0'};
+                print_string(str, WHITE_ON_BLACK);
+            }
+        }
+        
     }
 
     outb(0x20, 0x20);
+}
+
+void reset_buffer(){
+    buffer_idx = 0;
+    line_ready = 0;
+    key_buffer[0] = '\0';
 }
