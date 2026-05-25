@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 
-#define WHITE_ON_BLACK 0x0F
-#define GREEN_ON_BLACK 0x0A
-#define RED_ON_BLACK   0x0C
-
 //kernel_entry.asm
 extern void idt_load(uint32_t idt_ptr_adress);
 
@@ -18,6 +14,14 @@ extern void isr1(void);
 extern void outw(uint16_t port, uint16_t data);
 extern void outb(uint16_t port, uint8_t data);
 extern uint8_t inb(uint16_t port);
+
+//idt.c
+void init_idt();
+void set_idt_gate(uint8_t n, uint32_t handler_adress);
+extern volatile int line_ready;
+extern char key_buffer[256];
+extern int writing_perm;
+void reset_buffer();
 
 struct idt_entry_struct
 {
@@ -37,14 +41,5 @@ struct idt_ptr_struct
 } __attribute__((packed));
 
 typedef struct idt_ptr_struct idt_ptr_t;
-
-void init_idt();
-void set_idt_gate(uint8_t n, uint32_t handler_adress);
-
-extern volatile int line_ready;
-extern char key_buffer[256];
-extern char lettre;
-extern int writing_perm;
-void reset_buffer();
 
 #endif
