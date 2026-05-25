@@ -129,7 +129,7 @@ void isr_keyboard_handler(){
         char lettre = kbd_azerty[scancode];
         
         if(lettre == '\n'){
-            key_buffer[buffer_idx] = "\0";
+            key_buffer[buffer_idx] = '\0';
             line_ready = 1;
         }
 

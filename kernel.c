@@ -7,6 +7,7 @@
 
 void main(){
     init_idt();
+    __asm__ volatile("sti");
     writing_perm = 0;
     welcome();
     writing_perm = 1;
@@ -21,7 +22,7 @@ void crash_division_by_zero(){
 
 void welcome(){
 
-    char* message = 
+    char *message = 
         "HH   HH   AAA   PPPPPP  EEEEEEE RRRRRR  ZZZZZ\n"
         "HH   HH  AAAAA  PP   PP EE      RR   RR    ZZ\n"
         "HHHHHHH AA   AA PPPPPP  EEEEE   RRRRRR    ZZ\n"
@@ -53,12 +54,12 @@ void read_line(){
     }
 }
 
-int strcmp(const char *s1, const char *s2) {
-    while (*s1 && (*s1 == *s2)) {
-        s1++;
-        s2++;
+int strcmp(char *str_1, char *str_2){
+    while(*str_1 && (*str_1 == *str_2)){
+        str_1 ++;
+        str_2 ++;
     }
-    return *(const unsigned char *)s1 - *(const unsigned char *)s2;
+    return *(const unsigned char *)str_1 - *(const unsigned char *)str_2;
 }
 
 void shell(){
@@ -66,5 +67,17 @@ void shell(){
         print_string("User@HaperzOS# ", WHITE_ON_BLACK);
         read_line();
         print_string("\n", WHITE_ON_BLACK);
+
+        if(strcmp(key_buffer, "clear") == 0){
+            clear_screen();
+        }
+
+        else if(strcmp(key_buffer, "reboot") == 0){
+            outb(0x64, 0xFE);
+        }
+
+        else{
+            print_string("Commande inconnue\n", WHITE_ON_BLACK);
+        }
     }
 }

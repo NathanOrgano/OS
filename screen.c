@@ -8,7 +8,7 @@
 #define GREEN_ON_BLACK 0x0A
 #define RED_ON_BLACK   0x0C
 
-char* video_memory = (char*) VIDEO_ADDRESS;
+char *video_memory = (char*) VIDEO_ADDRESS;
 int position_memory = 0;
 int cursor_x = 0;
 int cursor_y = 0;
@@ -29,7 +29,7 @@ void scrolling(uint8_t color){
 void clear_screen(){
     for (int i=0; i < 4000; i += 2){
         video_memory[i] = ' ';
-        video_memory[i+1] = GREEN_ON_BLACK; 
+        video_memory[i+1] = WHITE_ON_BLACK; 
     }
     cursor_x = 0;
     cursor_y = 0;
@@ -50,9 +50,11 @@ void print_char(char character, uint8_t color){
         cursor_x = 0;
         cursor_y ++;
     }
+
+    update_cursor_position();
 }
 
-void print_string(char* string, uint8_t color){
+void print_string(char *string, uint8_t color){
     int index_string = 0;
 
     while (string[index_string] != '\0'){
@@ -84,4 +86,16 @@ void clear_char(){
     int position = (cursor_y * MAX_COLS + cursor_x) * 2;
     video_memory[position] = ' ';
     video_memory[position + 1] = WHITE_ON_BLACK;
+
+    update_cursor_position();
+}
+
+void update_cursor_position(){
+    uint16_t position = (cursor_y * MAX_COLS) + cursor_x;
+
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, (uint8_t)(position >> 8)); 
+
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, (uint8_t)position); 
 }

@@ -15,6 +15,7 @@ extern void isr0(void);
 extern void isr1(void);
 
 //io.asm
+extern void outw(uint16_t port, uint16_t data);
 extern void outb(uint16_t port, uint8_t data);
 extern uint8_t inb(uint16_t port);
 
