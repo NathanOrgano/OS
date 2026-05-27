@@ -1,45 +1,45 @@
-#ifndef IDT_H
+#ifndef IDT_H //vérifie si le fichier est déjà inclus par le compilateur
 #define IDT_H
 
-#include <stdint.h>
-
-//kernel_entry.asm
-extern void idt_load(uint32_t idt_ptr_adress);
-
-//interrupt.asm
-extern void isr0(void);
-extern void isr1(void);
-
-//io.asm
-extern void outw(uint16_t port, uint16_t data);
-extern void outb(uint16_t port, uint8_t data);
-extern uint8_t inb(uint16_t port);
+#include <stdint.h> //inclusion d'une bibiloithèque pour gérer la taille des variables
 
 //idt.c
-void init_idt();
-void set_idt_gate(uint8_t n, uint32_t handler_adress);
-extern volatile int line_ready;
-extern char key_buffer[256];
-extern int writing_perm;
-void reset_buffer();
+void init_idt(); //initialisation de l'idt (descriptor et gates), (appellée dans la fonction main du kernel C)
+void reset_buffer(); //réinitialisation du buffer clavier (appellée par la fonction main du kernel C)
+extern volatile int line_ready; //déclare si une ligne est prête (appuie sur la touche entrer)
+extern char key_buffer[256]; //buffer clavier
+extern int writing_perm; //permission d'écriture
 
+//kernel_entry.asm
+extern void idt_load(uint32_t idt_ptr_adress); //Chargement du descriptor de l'idt en asm (appellée dans la fonction init_idt de idt.c)
+
+//interrupt.asm
+extern void isr0(void); //fonctions asm d'appel des interruptions (division par zero)
+extern void isr1(void); //fonctions asm d'appel des interruptions (clavier)
+
+//io.asm
+extern void outw(uint16_t port, uint16_t data); //fonction asm d'écriture d'un mot sur un port
+extern void outb(uint16_t port, uint8_t data); //fonction asm d'écriture d'un octet sur un port
+extern uint8_t inb(uint16_t port); //lecture d'un port (16 bits)
+
+//définition de la structure d'une entrée de l'idt
 struct idt_entry_struct
 {
-    uint16_t low_offset;
-    uint16_t sel;
-    uint8_t always0;
-    uint8_t flags;
-    uint16_t high_offset;
-} __attribute__((packed));
+    uint16_t low_offset; //base basse de l'adress de la fonction d'appel asm
+    uint16_t sel; //segment mémoire utilisé (GDT)
+    uint8_t always0; 
+    uint8_t flags; //paramètres de l'entrée
+    uint16_t high_offset; //base haute de l'adress de la fonction d'appel asm
+} __attribute__((packed)); //packed = reproduction exacte de cette structure en mémoire (pas d'alignement par 4 octets des données)
 
-typedef struct idt_entry_struct idt_entry_t;
+typedef struct idt_entry_struct idt_entry_t; //alias
 
-struct idt_ptr_struct
+struct idt_ptr_struct //définition de la structure du descriptor /pointeur
 {
-    uint16_t limit;
-    uint32_t base;
-} __attribute__((packed));
+    uint16_t limit; //taille de l'idt (256 entrées, 64 bits par entrée : 256*64 = 16 384 bits)
+    uint32_t base; //base
+} __attribute__((packed)); //packed = reproduction exacte de cette structure en mémoire (pas d'alignement par 4 octets des données)
 
-typedef struct idt_ptr_struct idt_ptr_t;
+typedef struct idt_ptr_struct idt_ptr_t; //alias
 
 #endif

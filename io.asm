@@ -3,7 +3,6 @@
 global outw
 global outb
 global inb
-global reboot
 
 outw:
     mov edx, [esp + 4] ;premier argument = port(16 bits)

@@ -1,10 +1,10 @@
-#include "idt.h"
-#include "screen.h"
+#include "idt.h" //inclusion de idt.h
+#include "screen.h" //inclusion de screen.h
 
-idt_entry_t idt[256];
-idt_ptr_t idt_ptr;
+idt_entry_t idt[256]; //crée un tableau de 256 entrées qui copie la structure de idt_entry_struct
+idt_ptr_t idt_ptr; //crée une variable du type idt_ptr_t (structure du pointeur/descriptor de l'idt)
 
-// À mettre dans idt.c (ou dans un fichier keyboard.c si tu veux séparer plus tard)
+//Table de correspondance scancode --> ASCII
 unsigned char kbd_azerty[128] = {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ')', '=', '\b', /* Backspace */
   '\t', 'a', 'z', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '^', '$', '\n', /* Enter */
@@ -36,14 +36,6 @@ unsigned char kbd_azerty[128] = {
     0, /* F12 Key */
     0, /* Tout le reste est à 0 */
 };
-
-void set_idt_gate(uint8_t n, uint32_t handler_adress){
-    idt[n].low_offset = (uint16_t)(handler_adress & 0xFFFF);
-    idt[n].sel = 0x08;
-    idt[n].always0 = 0x00;
-    idt[n].flags = 0x8E;
-    idt[n].high_offset = (uint16_t)((handler_adress >> 16) & 0xFFFF);
-}
 
 void remap_pic() {
     // ========================================================================
@@ -92,70 +84,82 @@ void remap_pic() {
     outb(0xA1, 0xFF); 
 }
 
+//création d'une entrée dans l'idt
+void set_idt_gate(uint8_t n, uint32_t handler_adress){ //handler_adress = adresse de la fonction asm d'appel de l'interruption
+    idt[n].low_offset = (uint16_t)(handler_adress & 0xFFFF); //partie basse de handler_adress
+    idt[n].sel = 0x08; //attribution du segment de code au selecteur
+    idt[n].always0 = 0x00;
+    idt[n].flags = 0x8E; //paramètres 
+    idt[n].high_offset = (uint16_t)((handler_adress >> 16) & 0xFFFF); //partie haute de handler_adress
+}
+
 void init_idt(){
-    idt_ptr.limit = (sizeof(idt_entry_t) * 256) - 1;
-    idt_ptr.base = (uint32_t)&idt;
+    idt_ptr.limit = (sizeof(idt_entry_t) * 256) - 1; //initialisation de la limte de l'idt à 16 384 - 1
+    idt_ptr.base = (uint32_t)&idt; //adresse de base du tableau de structures de l'idt (ensemble des entrées)
 
     for (int i = 0; i < 256; i++){
-        set_idt_gate(i, 0);
+        set_idt_gate(i, 0); //initialisation des interruptions à 0 (fonction d'appel asm)
     }
 
     remap_pic();
 
-    set_idt_gate(0x00, (uint32_t)isr0);
-    set_idt_gate(0x21, (uint32_t)isr1);
+    set_idt_gate(0x00, (uint32_t)isr0); //création d'une entrée dans l'idt qui gère l'interruption de division par 0
+    set_idt_gate(0x21, (uint32_t)isr1); //création d'une entrée dans l'idt qui gère l'interruption clavier
 
-    idt_load((uint32_t)&idt_ptr);
+    idt_load((uint32_t)&idt_ptr); //chargement de l'idt (via fonction asm dans kernel_entry.asm)
 }
 
+//interruption 1 : Division par zero
 void isr_division_by_zero(){
     char* msg_erreur = "Erreur : Division par zero";
 
     clear_screen();
     print_string(msg_erreur, RED_ON_BLACK);
-    while(1);
+    while(1); //bloquage processeur
 }
 
-char key_buffer[256];
-int buffer_idx = 0;
-volatile int line_ready = 0;
-int writing_perm = 0;
+
+//interruption clavier
+char key_buffer[256]; //partie mémoire réservée qui contiendra les touches entrées par l'utilisateur lors de la saisie d'une commande
+int buffer_index = 0; //index du buffer
+volatile int line_ready = 0; //flag passant à 1 lorsque la touche entrer est pressée (volatile car la variable peut changer dans l'interruption)
+int writing_perm = 0; //définit la permission d'afficher à l'écran les caractères saisis par l'utilisateur
 
 void isr_keyboard_handler(){
-    uint8_t scancode = inb(0x60);
+    uint8_t scancode = inb(0x60); //lecture du port clavier (0x60)
 
-    if(!(scancode & 0x80)){
+    if(!(scancode & 0x80)){ //si la touche est pressée (pas relachée)
 
-        char lettre = kbd_azerty[scancode];
+        char lettre = kbd_azerty[scancode]; //on cherche la correspondance du scancode en ascii
         
-        if(lettre == '\n'){
-            key_buffer[buffer_idx] = '\0';
-            line_ready = 1;
+        if(lettre == '\n'){ //saut de ligne (touche entrer)
+            key_buffer[buffer_index] = '\0';
+            line_ready = 1; //ligne prête
         }
 
-        else if(lettre == '\b' && buffer_idx > 0){
-            buffer_idx--;
-            key_buffer[buffer_idx] = 0x00;
+        else if(lettre == '\b' && buffer_index > 0){ //touche supprimer
+            buffer_index--;
+            key_buffer[buffer_index] = 0x00; //suppression du dernier caractère dans le buffer
             clear_char();
         }
 
-        else if (lettre >=32 && buffer_idx < 255)
+        else if (lettre >=32 && buffer_index < 255) //si la lettre est un caractère ascii et si le buffer clavier n'est pas rempli
         {
-            if (writing_perm != 0){
-                key_buffer[buffer_idx++] = lettre;
+            if (writing_perm != 0){ //si on a la permission d'écrire
+                key_buffer[buffer_index++] = lettre; //déplacement de la lettre dans le key buffer
 
                 char str[2] = {lettre, '\0'};
-                print_string(str, WHITE_ON_BLACK);
+                print_string(str, WHITE_ON_BLACK); //affichage du caractère à l'écran
             }
         }
         
     }
 
-    outb(0x20, 0x20);
+    outb(0x20, 0x20); // fin de l'interrutpion
 }
 
 void reset_buffer(){
-    buffer_idx = 0;
+    buffer_index = 0; //remise à 0 du buffer index
     line_ready = 0;
-    key_buffer[0] = '\0';
+    key_buffer[0] = '\0'; //écriture du null caracter au début du buffer (pas d'écrasement du buffer, mais pas de lecture après le null caracter)
 }
