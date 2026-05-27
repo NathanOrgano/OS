@@ -10,7 +10,7 @@ CFLAGS = -m32 -ffreestanding -fno-pic -fno-pie -fno-stack-protector -Wall -Wextr
 # Dossier de destination des fichiers compilés
 BUILD_DIR = build
 # Liste de tous les fichiers objets nécessaires pour le noyau (dans le dossier build)
-OBJ = $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/screen.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/io.o
+OBJ = $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/screen.o $(BUILD_DIR)/idt.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/io.o $(BUILD_DIR)/exceptions.o $(BUILD_DIR)/timer.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/string.o
 # Règle par défaut : génère l'image finale du système (.img) dans build/
 all: $(BUILD_DIR)/os_image.img
 # Assemblage du bootloader et du noyau pour créer la disquette virtuelle
@@ -51,6 +51,22 @@ $(BUILD_DIR)/screen.o: screen.c screen.h io.h
 $(BUILD_DIR)/idt.o: idt.c idt.h io.h
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) idt.c -o $(BUILD_DIR)/idt.o
+
+$(BUILD_DIR)/exceptions.o: exceptions.h screen.h
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) exceptions.c -o $(BUILD_DIR)/exceptions.o
+
+$(BUILD_DIR)/timer.o: timer.h
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) timer.c -o $(BUILD_DIR)/timer.o
+
+$(BUILD_DIR)/keyboard.o: keyboard.h screen.h
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) keyboard.c -o $(BUILD_DIR)/keyboard.o
+
+$(BUILD_DIR)/string.o: string.h
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) string.c -o $(BUILD_DIR)/string.o
 # Nettoyage complet du dossier build
 clean:
 	rm -rf $(BUILD_DIR)

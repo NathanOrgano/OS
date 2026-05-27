@@ -5,7 +5,6 @@
 
 //idt.c
 void init_idt(); //initialisation de l'idt (descriptor et gates), (appellée dans la fonction main du kernel C)
-uint32_t get_ticks(); //récupère le nombre de ticks depuis l'allumage du processeur à une fréquence de 1 kHz
 void reset_buffer(); //réinitialisation du buffer clavier (appellée par la fonction main du kernel C)
 extern volatile int line_ready; //déclare si une ligne est prête (appuie sur la touche entrer)
 extern char key_buffer[256]; //buffer clavier
