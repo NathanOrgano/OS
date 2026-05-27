@@ -5,6 +5,7 @@
 
 //idt.c
 void init_idt(); //initialisation de l'idt (descriptor et gates), (appellée dans la fonction main du kernel C)
+uint32_t get_ticks(); //récupère le nombre de ticks depuis l'allumage du processeur à une fréquence de 1 kHz
 void reset_buffer(); //réinitialisation du buffer clavier (appellée par la fonction main du kernel C)
 extern volatile int line_ready; //déclare si une ligne est prête (appuie sur la touche entrer)
 extern char key_buffer[256]; //buffer clavier
@@ -15,12 +16,8 @@ extern void idt_load(uint32_t idt_ptr_adress); //Chargement du descriptor de l'i
 
 //interrupt.asm
 extern void isr0(void); //fonctions asm d'appel des interruptions (division par zero)
-extern void isr1(void); //fonctions asm d'appel des interruptions (clavier)
-
-//io.asm
-extern void outw(uint16_t port, uint16_t data); //fonction asm d'écriture d'un mot sur un port
-extern void outb(uint16_t port, uint8_t data); //fonction asm d'écriture d'un octet sur un port
-extern uint8_t inb(uint16_t port); //lecture d'un port (16 bits)
+extern void isr1(void); //fonctions asm d'appel des interruptions (timer)
+extern void isr2(void); //fonctions asm d'appel des interruptions (clavier)
 
 //définition de la structure d'une entrée de l'idt
 struct idt_entry_struct

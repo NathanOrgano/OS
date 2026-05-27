@@ -13,10 +13,6 @@
 #define MAX_ROWS 25
 #define MAX_COLS 80
 
-//io.asm
-extern void outb(uint16_t port, uint8_t data); //on fait référence à une fonction externe dans io.asm
-extern uint8_t inb(uint16_t port); //on fait référence à une fonction externe dans io.asm
-
 //définitions des fonctions utilisables par un autre fichier dans screen.c
 void clear_screen();
 void print_char(char character, uint8_t color);

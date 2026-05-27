@@ -40,7 +40,7 @@ init_32bits:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov fs, ax
+    mov ss, ax
 
     mov esp, 0X9000 ;on déplace le sommet de la pile à 0x90000 (en dessous du kernel)
 

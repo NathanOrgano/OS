@@ -1,9 +1,14 @@
 [BITS 32]
 
-global isr0 ;fonction utilisable par les autres fichiers
-global isr1 ;fonction utilisable par les autres fichiers
-extern isr_division_by_zero ;fonction de gestion de l'interruption en c (idt.c)
-extern isr_keyboard_handler ;fonction de gestion de l'interruption en c (idt.c)
+;fonctions utilisable par les autres fichiers
+global isr0 
+global isr1
+global isr2 
+
+;fonctions de gestion de l'interruption en c (idt.c)
+extern isr_division_by_zero 
+extern isr_timer_handler
+extern isr_keyboard_handler
 
 isr0:
     cli ;désactivation de toutes les interruptions
@@ -13,6 +18,13 @@ isr0:
     iretd ; retour avec réactivation des interruptions (32 bits)
 
 isr1:
+    cli
+    pushad
+    call isr_timer_handler
+    popad
+    iretd
+
+isr2:
     cli
     pushad
     call isr_keyboard_handler ;idt.c

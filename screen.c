@@ -1,4 +1,5 @@
 #include "screen.h" //inclusion du fichier d'en tête
+#include "io.h" //gestion des entrées et sorties via ports matériels
 
 char *video_memory = (char*) VIDEO_ADDRESS; //On définit un pointeur à l'adresse de débute de la VRAM
 int cursor_x = 0; //position x
@@ -7,7 +8,7 @@ int cursor_y = 0; //position y
 //scrolling vertical
 void scrolling(uint8_t color){ //fonction de scrolling (on passe quand même la couleur en attribut pour définir la couleur du curseur.)
     //on décale tous les octets de la mémoire vidéo de 160 octets en arrière
-    for(int i=0; i < 4000; i++){ 
+    for(int i=0; i < 3840; i++){ 
         video_memory[i] = video_memory[i+160]; 
     }
 
@@ -75,6 +76,8 @@ void print_string(char *string, uint8_t color){
         if (string[index_string] == '\n'){ //saut de ligne
             cursor_x = 0;
             cursor_y++;
+
+            update_cursor_position();
         }
 
         else{ 

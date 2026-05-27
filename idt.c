@@ -1,5 +1,6 @@
 #include "idt.h" //inclusion de idt.h
 #include "screen.h" //inclusion de screen.h
+#include "io.h" //gestion des entrées et sorties via ports matériels
 
 idt_entry_t idt[256]; //crée un tableau de 256 entrées qui copie la structure de idt_entry_struct
 idt_ptr_t idt_ptr; //crée une variable du type idt_ptr_t (structure du pointeur/descriptor de l'idt)
@@ -39,7 +40,7 @@ unsigned char kbd_azerty[128] = {
 
 void remap_pic() {
     // ========================================================================
-    // 1. ICW1 : Initialisation des puces
+    // 1. ICW1 : Reprogrammation des puces
     // ========================================================================
     // On envoie 0x11 pour dire aux deux PICs de s'initialiser et d'attendre
     // les 3 prochains octets de configuration (ICW2, ICW3 et ICW4).
@@ -78,7 +79,7 @@ void remap_pic() {
     // - Bit 1 (IRQ 1 - Clavier)       : 0 -> ACTIVÉ !
     // - Bit 2 (IRQ 2 - Liaison Slave) : 0 -> ACTIVÉ (Obligatoire pour que le Slave fonctionne)
     // - Bits 3 à 7 (Autres IRQ)       : 1 -> Bloqués
-    outb(0x21, 0xF9); 
+    outb(0x21, 0b11111000); 
     
     // Pour le Slave, on bloque absolument tout pour l'instant (0xFF = 11111111)
     outb(0xA1, 0xFF); 
@@ -104,7 +105,11 @@ void init_idt(){
     remap_pic();
 
     set_idt_gate(0x00, (uint32_t)isr0); //création d'une entrée dans l'idt qui gère l'interruption de division par 0
-    set_idt_gate(0x21, (uint32_t)isr1); //création d'une entrée dans l'idt qui gère l'interruption clavier
+    outb(0x43, 0b00110110); //envoi de l'octet de configuration du PIT (Programmable Interval Timer)
+    outb(0x40, (uint8_t)0x4A9); //envoi de la partie basse de la fréquence sur le port de commande (diviseur = 1193, fréquence = 1000 Hz)
+    outb(0x40, 0x4A9 >> 8); //envoi de la partie haute de la fréquence sur le port de commande (diviseur = 1193, fréquence = 1000 Hz)
+    set_idt_gate(0x20, (uint32_t)isr1); //création d'une entrée dans l'idt qui gère le timer
+    set_idt_gate(0x21, (uint32_t)isr2); //création d'une entrée dans l'idt qui gère l'interruption clavier
 
     idt_load((uint32_t)&idt_ptr); //chargement de l'idt (via fonction asm dans kernel_entry.asm)
 }
@@ -118,8 +123,21 @@ void isr_division_by_zero(){
     while(1); //bloquage processeur
 }
 
+//irq0 : timer
+volatile uint32_t system_ticks = 0;
 
-//interruption clavier
+void isr_timer_handler(){
+    system_ticks ++;
+    outb(0x20, 0x20);
+
+    //tps en s = system_ticks / fréquence = system_ticks / 1000
+}
+//récupère le nombre de ticks depuis l'allumage du processeur
+uint32_t get_ticks(){
+    return system_ticks;
+}
+
+//irq1 : clavier
 char key_buffer[256]; //partie mémoire réservée qui contiendra les touches entrées par l'utilisateur lors de la saisie d'une commande
 int buffer_index = 0; //index du buffer
 volatile int line_ready = 0; //flag passant à 1 lorsque la touche entrer est pressée (volatile car la variable peut changer dans l'interruption)
@@ -155,7 +173,7 @@ void isr_keyboard_handler(){
         
     }
 
-    outb(0x20, 0x20); // fin de l'interrutpion
+    outb(0x20, 0x20); // fin de l'interrutpion (EOI) sur le maître
 }
 
 void reset_buffer(){
