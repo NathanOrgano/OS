@@ -4,4 +4,8 @@
 void reset_buffer(void);
 void read_line(void);
 
+extern volatile int line_ready; //déclare si une ligne est prête (appuie sur la touche entrer)
+extern char key_buffer[256]; //buffer clavier
+extern int writing_perm; //permission d'écriture
+
 #endif

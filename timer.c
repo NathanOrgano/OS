@@ -16,8 +16,8 @@ uint32_t get_ticks(){
 }
 
 //fonction d'attente processeur
-void sleep(uint32_t duration){
-    uint32_t target_ticks = get_ticks() + duration;
+void sleep(uint32_t duration_ms){
+    uint32_t target_ticks = get_ticks() + duration_ms;
 
     while(get_ticks() < target_ticks){
         __asm__ volatile ("hlt");

@@ -41,8 +41,8 @@ void remap_pic() {
     // ========================================================================
     // Rappel : Un bit à 0 = ACTIVÉ, un bit à 1 = MASQUÉ/BLOQUÉ.
     //
-    // Pour le Master, on veut 0xF9 (soit 11111001 en binaire) :
-    // - Bit 0 (IRQ 0 - Horloge)       : 1 -> Bloqué (évite l'interruption fantôme 0x20)
+    // Pour le Master, on veut 0xF9 (soit 11111000 en binaire) :
+    // - Bit 0 (IRQ 0 - Horloge)       : 0 -> ACTIVÉ !
     // - Bit 1 (IRQ 1 - Clavier)       : 0 -> ACTIVÉ !
     // - Bit 2 (IRQ 2 - Liaison Slave) : 0 -> ACTIVÉ (Obligatoire pour que le Slave fonctionne)
     // - Bits 3 à 7 (Autres IRQ)       : 1 -> Bloqués

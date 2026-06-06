@@ -4,6 +4,7 @@
 #include "string.h"
 #include "keyboard.h"
 #include "timer.h"
+#include "pmm.h"
 
 //fonction de test de l'isr 0 (division par 0)
 void crash_division_by_zero(){
@@ -28,7 +29,7 @@ void welcome(){
         " OOOOO   SSSSS\n";*/
 
     char *message = 
-        "_________________________________________________________________\n"
+        "______________________________________________________________\n"
         "___________________/ / / /__/   |__/ __ \\__/ ____/_/ __ \\__  /\n"
         "__________________/ /_/ /__/ /| |_/ /_/ /_/ __/___/ /_/ /_/ /\n"
         "_________________/ __  / _/ ___ |/ ____/_/ /_____/ _, _/_/ /__\n"
@@ -53,7 +54,23 @@ void welcome(){
 }
 
 //Entrée dans le "shell"
-void shell(){
+void shell(){   
+    uint32_t max_memory = get_max_memory()/1024;
+    uint32_t used_memory = get_used_memory()/1024;
+    uint32_t available_memory = max_memory - used_memory;
+
+    print_string("Memoire installee = ", WHITE_ON_BLACK);
+    print_string(itoa(max_memory), WHITE_ON_BLACK);
+    print_string(" ko\n", WHITE_ON_BLACK);
+
+    print_string("Memoire utilisee = ", WHITE_ON_BLACK);
+    print_string(itoa(used_memory), WHITE_ON_BLACK);
+    print_string(" ko\n", WHITE_ON_BLACK);
+
+    print_string("Memoire disponible = ", WHITE_ON_BLACK);
+    print_string(itoa(available_memory), WHITE_ON_BLACK);
+    print_string(" ko\n", WHITE_ON_BLACK);
+
     while(1){ //on boucle infiniment
         print_string("User@HaperzOS# ", WHITE_ON_BLACK);
         read_line();

@@ -10,13 +10,18 @@ init:
     mov sp, 0x7C00 ;on place le sommet de la pile à 0x7C00
     sti ;on réactive les interruptions
 
-chargement_kernel:
+chargement_kernel: 
+    mov ah, 0x88 ;on récupère la taille de la mémoire étendue (taille de la ram - 1mo)
+    int 0x15 ;interruption
+
+    mov si, 0x0500 
+    mov[ds:si], ax ;on déplace la valeur la taille de la mémoire à l'adresse 0x0000:0x0500 pour la récupérer dans le kernel C
+
     mov ax, 0x1000 ;on déclare le chargement de notre kernel au segment 0x1000
     mov es, ax
     xor bx, bx ;et à l'offset 0x0000 (0x1000:0x0000 = 0x10000)
-
     mov ah, 0x02 ;lecture de disque
-    mov al, 0x0A ;lecture sur 10 secteurs
+    mov al, 0x32 ;lecture sur 50 secteurs
     mov ch, 0x00 ;sur cylindre 0
     mov cl, 0x02 ;début de lecture au secteur 2
     mov dh, 0x00 ;tête de lecture 0
@@ -42,7 +47,7 @@ init_32bits:
     mov gs, ax
     mov ss, ax
 
-    mov esp, 0X9000 ;on déplace le sommet de la pile à 0x90000 (en dessous du kernel)
+    mov esp, 0X9000 ;on déplace le sommet de la pile à 0x9000 (en dessous du kernel)
 
     jmp 0x10000 ;on saute dans le kernel_entry.asm
 

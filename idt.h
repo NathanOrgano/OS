@@ -6,9 +6,6 @@
 //idt.c
 void init_idt(); //initialisation de l'idt (descriptor et gates), (appellée dans la fonction main du kernel C)
 void reset_buffer(); //réinitialisation du buffer clavier (appellée par la fonction main du kernel C)
-extern volatile int line_ready; //déclare si une ligne est prête (appuie sur la touche entrer)
-extern char key_buffer[256]; //buffer clavier
-extern int writing_perm; //permission d'écriture
 
 //kernel_entry.asm
 extern void idt_load(uint32_t idt_ptr_adress); //Chargement du descriptor de l'idt en asm (appellée dans la fonction init_idt de idt.c)
